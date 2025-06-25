@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WebSocket Chat Tester</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>💬 WebSocket Chat Tester</h1>
+
+    <div id="messages" class="chat-box"></div>
+
+    <div class="input-area">
+      <input type="text" id="messageInput" placeholder="Type your message..." />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const wsUrl = 'ws://127.0.0.1:8000/ws/chat/room1/';
+
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = function () {
+      addMessage('✅ Connected to WebSocket server', 'status');
+    };
+
+    socket.onmessage = function (event) {
+      addMessage('📩 Server: ' + event.data, 'server');
+    };
+
+    socket.onerror = function () {
+      addMessage('❌ WebSocket error occurred', 'error');
+    };
+
+    socket.onclose = function () {
+      addMessage('⚠️ WebSocket connection closed', 'status');
+    };
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (message) {
+        socket.send(JSON.stringify({ message: message }));
+        addMessage('➡️ You: ' + message, 'you');
+        messageInput.value = '';
+      }
+    }
+
+    function addMessage(text, type) {
+      const p = document.createElement('p');
+      p.textContent = text;
+      p.className = type;
+      messagesDiv.appendChild(p);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
